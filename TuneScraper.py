@@ -61,17 +61,40 @@ def ParseAbcFile(abcFile):
     MarkCompleted(tuneType, tuneKey)
     return True
 
+def SaveAbcFile(abcFile):
+    tuneName = 'DEFAULT'
+    tuneKey = 'DEFAULT'
+    tuneType = 'DEFAULT'
+    fileText = ''
+    for line in abcFile:
+        if 'T:' in line:
+            tuneName = ParseAbcInfo(line)
+        elif 'R:' in line:
+            tuneType = ParseAbcInfo(line)
+        elif 'K:' in line:
+            tuneKey = ParseAbcInfo(line)
+        fileText += line
+    folder = "data/{}/{}".format(
+            tuneType, tuneKey)
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+
+    fileName = "{}/{}.abc".format(folder, tuneName)
+    tuneFile = open(fileName, 'w')
+    tuneFile.write(fileText)
+    tuneFile.close()
+
 errors = 0
 successes = 0
-for i in range(6000,7000):
-    fileName = 'https://thesession.org/tunes/{}/abc/1'.format(i)
+for i in range(1,6900):
+    fileName = 'https://thesession.org/tunes/{}/abc'.format(i)
     try:
         response = urllib2.urlopen(fileName)
-        success = ParseAbcFile(response)
+        success = SaveAbcFile(response)
         if success:
             print("{} was processed correctly!".format(fileName))
         response.close()
-    except:
+    except urllib2.HTTPError:
         print("Error with {}".format(fileName))
         errors += 1
 print('{} errors'.format(errors))
