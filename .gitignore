@@ -1,8 +1,10 @@
 # ABC files
 *.abc
+*.abc~
 
-# All output text files
+# Output files
 *.txt
+*.mid
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
