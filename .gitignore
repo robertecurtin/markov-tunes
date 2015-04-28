@@ -1,6 +1,6 @@
 # ABC files
 *.abc
-*.abc~
+*~
 
 # Output files
 *.txt
