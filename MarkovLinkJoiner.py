@@ -44,8 +44,9 @@ def CreateMarkovTune(markovLinksFileName):
     NormalizePhrases(phrases)
     newTune = ''
     currentPhrase = 'start'
-    PrepAbcFile("Markoved.abc", "reel", "Amaj")
-    outputFile = open("Markoved.abc", 'a')
+    outputFileName = 'Markovoutput.abc'
+    PrepAbcFile(outputFileName, "reel", "Amaj")
+    outputFile = open(outputFileName, 'a')
     while 'end' not in currentPhrase:
         random = uniform(0.0, 100.0)
         if currentPhrase not in phrases:
@@ -53,7 +54,7 @@ def CreateMarkovTune(markovLinksFileName):
             break
         for linkedPhrase, chance in phrases[currentPhrase].iteritems():
             print("Trying {} at {} vs {}...".format(linkedPhrase, chance, random))
-            if(random <= chance):
+            if random <= chance :
                 currentPhrase = linkedPhrase
                 outputFile.write('|')
                 outputFile.write(currentPhrase)
@@ -61,4 +62,4 @@ def CreateMarkovTune(markovLinksFileName):
     outputFile.close()
     markovLinksFile.close()
 
-CreateMarkovTune("data/reel/Amaj/MarkovLinks.txt")
+CreateMarkovTune("data/reel/Dmaj/MarkovLinks.txt")
