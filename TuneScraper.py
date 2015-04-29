@@ -1,5 +1,6 @@
 import urllib2
 import os
+import string
 
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
@@ -78,8 +79,8 @@ def SaveAbcFile(abcFile):
             tuneType, tuneKey)
     if not os.path.exists(folder):
         os.makedirs(folder)
-
-    fileName = "{}/{}.abc".format(folder, tuneName)
+    validTuneName = ''.join(char for char in tuneName if char not in '<>:"/\|?*')
+    fileName = "{}/{}.abc".format(folder, validTuneName)
     tuneFile = open(fileName, 'w')
     tuneFile.write(fileText)
     tuneFile.close()
