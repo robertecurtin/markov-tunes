@@ -1,6 +1,5 @@
 import urllib2
 import os
-import string
 
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
