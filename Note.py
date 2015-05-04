@@ -5,11 +5,13 @@
 import string
 
 def extractDigits(inputString):
-    return ''.join([c for c in inputString if c in string.digits])
+    return ''.join([c for c in inputString.strip() if c in string.digits])
 # This class represents a single note in ABC
 class Note:
     def __init__(self):
         self.text = ''
+        self._overwriteLength = False
+        self._length = 1
         
     def addChar(self, char):
         self.text += char
@@ -23,8 +25,16 @@ class Note:
     def containsNote(self):
         return any(c in self.text for c in 'abcdefgABCDEFGz')
 
+    def setLength(self, length):
+        self._length = length
+        self._overwriteLength = True
+
     def getLength(self):
-        length = 1
+        # If the previous note was dotted, the length will be overwritten
+        if self._overwriteLength:
+            return self._length
+
+        self._length = 1
         # Handle dotted rhythms
         if self.isDotted() or self.isHalved():
             if self.isDotted() and self.isHalved():
@@ -33,16 +43,17 @@ class Note:
             lengthText = (c for c in self.text if c in '><')
             dottedModifier = 1
             for char in lengthText:
-                    dottedModifier /= 1/2
+                    dottedModifier /= 1.0/2.0
             if self.isDotted():
-                length = 1 - dottedModifier
+                self._length = 2 - dottedModifier
             elif self.isHalved():
-                length = dottedModifier
+                self._length = dottedModifier
             else:
                 print("Error in rhythm modification! < or > was missing for\
                 note {}".format(self.text))
-            return length
+            return self._length
 
+        # Handle fractional modifiers
         elif '/' in self.text:
             # Split the text on the bar before continuing
             splitNote = self.text.split('/')
@@ -54,16 +65,21 @@ class Note:
             # Get all digits in the denominator
             denominator = extractDigits(splitNote[1])
             if numerator:
-                length *= float(numerator)
+                self._length *= float(numerator)
             if denominator:
-                length /= float(denominator)
-            return length
+                self._length /= float(denominator)
+            # / is shorthand for 1/2, // for 1/4, 3/ for 3/2, etc.
+            else:
+                for slashes in range(self.text.count('/')):
+                    self._length /= 2.0
+            return self._length
         
         elif any(x in self.text for x in string.digits):
             multiplier = extractDigits(self.text)
-            length *= float(multiplier)
-            return length
+            self._length *= float(multiplier)
+            return self._length
         else:
-            return length
-            
+            return self._length
+        if self._length == 0:
+            print("Warning: 0-length note {}!".format(self.text))
             
