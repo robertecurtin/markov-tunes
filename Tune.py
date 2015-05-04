@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Written by Robert Curtin
+import os # Temporary for testing
 from Phrase import Phrase
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
@@ -19,7 +20,11 @@ def IsPostNote(char):
     return char in "',/123456789><)}.~HKkMOPSTuv"
     
 def IsNote(char):
-    return char in 'abcdefgABCDEFG'
+    # Note: z is a rest
+    return char in 'abcdefgABCDEFGz'
+    
+def IsChord(char):
+    return char in '"!'    
 
 def ContainsNote(string):
     for char in string:
@@ -28,10 +33,14 @@ def ContainsNote(string):
     return False
 
 def IsIgnored(char):
-    # " is used for chords
+    # m is used for chords
     # | denotes a bar separating phrases
     # : is used for repeats
-    return char in '"|: '
+    # # * ; ? @ are ignored per the abc standard v2.1
+    # [] denote temporary changes, which I am ignoring 
+    # - denotes a tie, which I am ignoring
+    # Stripping the char ensures whitespace characters are ignored
+    return char.strip() in '|: #*;?@[]m-'
 
 class Tune:
     def __init__(self):
@@ -46,13 +55,16 @@ class Tune:
         self.startPhrase.setNotes('start')
         self.currentPhrase = self.startPhrase
     
+    def GetLengthModifier(self, note):
+        return self.noteLength
+        
     def extractPhrasesFromLine(self, line):
         # Detect notes
         notes = ['']
         inChord = False
         for char in line.strip():
             # Record everything between " as a single note, as it is a chord
-            if char == '"':
+            if IsChord(char):
                 if inChord:
                     # Close the chord
                     inChord = False
@@ -86,12 +98,14 @@ class Tune:
             elif IsIgnored(char):
                 continue
             else:
-                print("Warning: Unrecognized char '{}' from line '{}'"
+                print(ord(char))
+                print("Warning: Unrecognized char [{}] from line [{}]"
                 .format(char, line))
             
-        for note in notes:
-            print("Note: {}".format(note))
         # Combine notes until phrase length is met
+        for note in notes:
+            length = self.GetLengthModifer(note)
+            
      # Carry over remainder to next phrase
         
     def parseFile(self, fileName):
@@ -124,6 +138,13 @@ class Tune:
                 continue
             else:
                 self.extractPhrasesFromLine(line)
-                
-t = Tune()
-t.parseFile("D:\Users\Robert\Documents\GitHub\markov-tunes\data\jig\Amin\Coleraine, The.abc")
+
+tuneType = 'reel'
+tuneKey = 'Dmaj'
+folder = 'data/{}/{}'.format(tuneType, tuneKey)
+for abcFileName in os.listdir(folder):      
+    if 'abc' in abcFileName:
+        print("Parsing {}...".format(abcFileName))
+        fullAbcFileName = "{}/{}".format(folder, abcFileName)   
+        t = Tune()
+        t.parseFile(fullAbcFileName)
