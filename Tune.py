@@ -3,6 +3,8 @@
 # Written by Robert Curtin
 import os # Temporary for testing
 from Phrase import Phrase
+from Note import Note
+
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
         
@@ -52,7 +54,6 @@ class Tune:
         self.origin = ''
         self.phrases = {}
         self.startPhrase = Phrase()
-        self.startPhrase.setNotes('start')
         self.currentPhrase = self.startPhrase
     
     def GetLengthModifier(self, note):
@@ -60,7 +61,8 @@ class Tune:
         
     def extractPhrasesFromLine(self, line):
         # Detect notes
-        notes = ['']
+        firstNote = Note()
+        notes = [firstNote]
         inChord = False
         for char in line.strip():
             # Record everything between " as a single note, as it is a chord
@@ -68,33 +70,39 @@ class Tune:
                 if inChord:
                     # Close the chord
                     inChord = False
-                    notes[-1] += char
                 else:
                     # Begin a new chord
                     inChord = True
-                    notes.append('')
-                    notes[-1] += char
+                    notes.append(Note())
+                notes[-1].addChar(char)
+                
             # If a chord is in progress, continue recording that chord until
             # the chord is closed
             elif inChord:
-                notes[-1] += char
+                notes[-1].addChar(char)
+                
             # If the character comes before a note and a note has been
             # recorded in the previous sequence, begin a new note
             # Otherwise, just add the character
             elif IsPreNote(char):
-                if ContainsNote(notes[-1]):
-                    notes.append('')
-                notes[-1] += char
+                if notes[-1].containsNote():
+                    notes.append(Note())
+                notes[-1].addChar(char)
+                
             # If the character is a note, do the same as PreNote above
             elif IsNote(char):
-                if ContainsNote(notes[-1]):
-                    notes.append('')
-                notes[-1] += char
+                if notes[-1].containsNote():
+                    notes.append(Note())
+                notes[-1].addChar(char)
+                
+            # If the character comes after a note, it will always be added
             elif IsPostNote(char):
-                notes[-1] += char
+                notes[-1].addChar(char)
+                
             elif char == '%':
                 # Rest of the line is commented out
                 break
+            
             elif IsIgnored(char):
                 continue
             else:
@@ -104,7 +112,9 @@ class Tune:
             
         # Combine notes until phrase length is met
         for note in notes:
-            length = self.GetLengthModifer(note)
+            length = note.getLength()
+            if length != 1:
+                print("{} has length {}".format(note.text, length))
             
      # Carry over remainder to next phrase
         
