@@ -8,23 +8,30 @@ import unittest
 
 class NoteTest(unittest.TestCase):
     def test_note_length(self):
-        a = Note()
-        a.addChar('F')
-        self.assertEqual(a.getLength(), 1)
+        baseNoteLength = 1.0/8.0
+        testBasic = Note(baseNoteLength)
+        testBasic.addChar('F')
+        self.assertEqual(testBasic.getLength(), 1 * baseNoteLength)
         
-        a.addChar('3')
-        self.assertEqual(a.getLength(), 3)
+        testBasic.addChar('3')
+        self.assertEqual(testBasic.getLength(), 3 * baseNoteLength)
         
-        a.addChar('/')
-        self.assertEqual(a.getLength(), 3.0/2.0)
+        testBasic.addChar('/')
+        self.assertEqual(testBasic.getLength(), 3.0/2.0 * baseNoteLength)
         
-        a.addChar('2')
-        self.assertEqual(a.getLength(), 3.0/2.0)
+        testBasic.addChar('2')
+        self.assertEqual(testBasic.getLength(), 3.0/2.0 * baseNoteLength)
         
-        b = Note()
-        b.addChar('D')
-        b.addChar('/')
-        self.assertEqual(b.getLength(), 1.0/2.0)
+        numberlessFraction = Note(baseNoteLength)
+        numberlessFraction.addChar('D')
+        numberlessFraction.addChar('/')
+        self.assertEqual(numberlessFraction.getLength(), 
+                         1.0/2.0 * baseNoteLength)
+        numberlessFraction.addChar('/')
+        self.assertEqual(numberlessFraction.getLength(), 
+                         1.0/4.0 * baseNoteLength)
+        
+        
         
 if __name__ == '__main__':
     unittest.main()

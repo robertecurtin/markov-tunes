@@ -36,10 +36,18 @@ class Phrase:
     def getLength(self):
         length = 0
         for note in self.notes:
-            length += note.length
+            length += note.getLength()
         return length
         
+    def getText(self):
+        text = ''
+        for note in self.notes:
+            text += note.text
+        return text
+        
     def isLastNoteBroken(self):
+        if len(self.notes) == 0:
+            return False
         return self.getLastNote().isDotted() or self.getLastNote().isHalved()
         
     def getLastNoteLength(self):

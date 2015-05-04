@@ -3,7 +3,9 @@
 # Written by Robert Curtin
 import os # Temporary for testing
 from Phrase import Phrase
+from PhraseChain import PhraseChain
 from Note import Note
+from fractions import Fraction
 
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
@@ -19,7 +21,7 @@ def IsPostNote(char):
     # Using > and < change the length of the notes on each side of it
     # ) ends a slur, } ends a grace note
     # . ~ H K k M O P S T u v are various accents
-    return char in "',/123456789><)}.~HKkMOPSTuv"
+    return char in "',/123456789><)}.~HKkMOPSTuv|"
     
 def IsNote(char):
     # Note: z is a rest
@@ -42,14 +44,17 @@ def IsIgnored(char):
     # [] denote temporary changes, which I am ignoring 
     # - denotes a tie, which I am ignoring
     # Stripping the char ensures whitespace characters are ignored
-    return char.strip() in '|: #*;?@[]m-'
+    # J should not be used, this may have some other meaning
+    # \ denotes a continuations, which is not relevant as we remove bars
+    # + was used in previous abc standards, but is outdated
+    return char.strip() in ': #*;?@[]m-J\\+'
 
 class Tune:
     def __init__(self):
         self.title = ''
-        self.meter = 6/8
+        self.meter = 6.0/8.0
         self.rhythm = 'Jig'
-        self.noteLength = 1/8
+        self.noteLength = 1.0/8.0
         self.key = ''
         self.origin = ''
         self.phrases = {}
@@ -61,8 +66,8 @@ class Tune:
         
     def extractPhrasesFromLine(self, line):
         # Detect notes
-        firstNote = Note()
-        notes = [firstNote]
+        currentNote = Note(self.noteLength)
+        phraseChain = PhraseChain(self.meter, self.noteLength)
         inChord = False
         for char in line.strip():
             # Record everything between " as a single note, as it is a chord
@@ -73,31 +78,34 @@ class Tune:
                 else:
                     # Begin a new chord
                     inChord = True
-                    notes.append(Note())
-                notes[-1].addChar(char)
+                    phraseChain.addNote(currentNote)
+                    currentNote = Note(self.noteLength)
+                currentNote.addChar(char)
                 
             # If a chord is in progress, continue recording that chord until
             # the chord is closed
             elif inChord:
-                notes[-1].addChar(char)
+                currentNote.addChar(char)
                 
             # If the character comes before a note and a note has been
             # recorded in the previous sequence, begin a new note
             # Otherwise, just add the character
             elif IsPreNote(char):
-                if notes[-1].containsNote():
-                    notes.append(Note())
-                notes[-1].addChar(char)
+                if currentNote.containsNote():
+                    phraseChain.addNote(currentNote)
+                    currentNote = Note(self.noteLength)
+                currentNote.addChar(char)
                 
             # If the character is a note, do the same as PreNote above
             elif IsNote(char):
-                if notes[-1].containsNote():
-                    notes.append(Note())
-                notes[-1].addChar(char)
+                if currentNote.containsNote():
+                    phraseChain.addNote(currentNote)
+                    currentNote = Note(self.noteLength)
+                currentNote.addChar(char)
                 
             # If the character comes after a note, it will always be added
             elif IsPostNote(char):
-                notes[-1].addChar(char)
+                currentNote.addChar(char)
                 
             elif char == '%':
                 # Rest of the line is commented out
@@ -110,13 +118,8 @@ class Tune:
                 print("Warning: Unrecognized char [{}] from line [{}]"
                 .format(char, line))
             
-        # Combine notes until phrase length is met
-        for note in notes:
-            length = note.getLength()
-            if length != 1:
-                print("{} has length {}".format(note.text, length))
-            
-     # Carry over remainder to next phrase
+       
+
         
     def parseFile(self, fileName):
         if '.abc' not in fileName:
@@ -141,15 +144,15 @@ class Tune:
             elif 'K:' in line:
                 self.key = ParseAbcInfo(line)
             elif 'M:' in line:
-                self.meter = ParseAbcInfo(line)
+                self.meter = Fraction(ParseAbcInfo(line).strip())
             elif 'L' in line:
-                self.noteLength = ParseAbcInfo(line)
+                self.noteLength = Fraction(ParseAbcInfo(line).strip())
             elif line.strip() == '':
                 continue
             else:
                 self.extractPhrasesFromLine(line)
 
-tuneType = 'reel'
+tuneType = 'jig'
 tuneKey = 'Dmaj'
 folder = 'data/{}/{}'.format(tuneType, tuneKey)
 for abcFileName in os.listdir(folder):      
