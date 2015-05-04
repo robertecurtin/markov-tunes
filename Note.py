@@ -12,7 +12,7 @@ class Note:
         self.text = ''
         self._overwriteLength = False
         self._length = 1
-        self._baseLength = baseLength
+        self.baseLength = baseLength
         
     def addChar(self, char):
         # Do not mark any characters after the bar (repeat numbers, etc)
@@ -31,25 +31,31 @@ class Note:
     def setLength(self, length):
         self._length = length
         self._overwriteLength = True
+        
+    def setLengthToLeftover(self, prevLength):
+        # Sets length to the remainder from a previous dotted or halved
+        # note
+        self._length = 2 * self.baseLength - prevLength
+        self._overwriteLength = True
 
     def getLength(self):
         # If the previous note was dotted, the length will be overwritten
         if not self._overwriteLength:
                 
-            self._length = self._baseLength
+            self._length = self.baseLength
             # Handle dotted rhythms
             if self.isDotted() or self.isHalved():
                 if self.isDotted() and self.isHalved():
                     print("Multiple modifiers in note {}, this may\
                     cause rhythm issues.".format(self.text))
                 lengthText = (c for c in self.text if c in '><')
-                dottedModifier = 1
+                dottedModifier = 1.0
                 for char in lengthText:
-                        dottedModifier /= 1.0/2.0
+                    dottedModifier /= 2.0
                 if self.isDotted():
-                    self._length = 2 - dottedModifier
+                    self._length *= (2 - dottedModifier)
                 elif self.isHalved():
-                    self._length = dottedModifier
+                    self._length *= dottedModifier
                 else:
                     print("Error in rhythm modification! < or > was missing for\
                     note {}".format(self.text))

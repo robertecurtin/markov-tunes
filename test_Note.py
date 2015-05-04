@@ -31,6 +31,15 @@ class NoteTest(unittest.TestCase):
         self.assertEqual(numberlessFraction.getLength(), 
                          1.0/4.0 * baseNoteLength)
         
+        testDotted = Note(baseNoteLength)
+        testDotted.addChar('=')
+        testDotted.addChar('c')
+        testDotted.addChar('>')
+        testDotted.addChar('!')
+        self.assertTrue(testDotted.isDotted())
+        self.assertFalse(testDotted.isHalved())
+        self.assertEqual(testDotted.getLength(),
+                         1.5 * baseNoteLength)
         
         
 if __name__ == '__main__':

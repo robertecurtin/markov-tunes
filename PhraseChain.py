@@ -27,15 +27,15 @@ class PhraseChain:
         # Carry over leftover note length if the previous note was dotted or
         # halved
         if self.isLastNoteBroken():
-            newLength = 2 - self.getLastNoteLength()
-            note.setLength(newLength)
+            note.setLengthToLeftover(self.getLastNoteLength())
         self.getLastPhrase().addNote(note)
         # Check if the maximum phrase length has been met
         # Todo: Split up notes between phrases if phrase length is too long
         # or ignore phrase entirely
         if self.getLastPhrase().getLength() >= self.meter:
             if self.getLastPhrase().getLength() != self.meter:
-                print("Error: Phrase {} too long for meter {}".format(
-                self.getLastPhrase().getText(), self.meter))
+                print("Error: Phrase {} with length {} too long for meter {}"
+                .format(self.getLastPhrase().getText(), 
+                        self.getLastNoteLength(), self.meter))
             self._phrases.append(Phrase())
     
