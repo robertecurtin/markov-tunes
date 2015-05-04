@@ -14,6 +14,12 @@ class Note:
         self._length = 1
         self.baseLength = baseLength
         
+    def __str__(self):
+        output = 'Text: "{}\n'.format(self.text)
+        output += 'Overwrite Length: {}\n'.format(self._overwriteLength)
+        output += 'Length: {}\n'.format(self._length)
+        output += 'Base length: {}\n'.format(self.baseLength)
+        return output
     def addChar(self, char):
         # Do not mark any characters after the bar (repeat numbers, etc)
         if '|' not in self.text:
@@ -86,3 +92,4 @@ class Note:
         if self._length == 0:
             print("Warning: 0-length note {}!".format(self.text))
         return self._length
+        

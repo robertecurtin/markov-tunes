@@ -37,5 +37,6 @@ class PhraseChain:
                 print("Error: Phrase {} with length {} too long for meter {}"
                 .format(self.getLastPhrase().getText(), 
                         self.getLastNoteLength(), self.meter))
+                self.getLastPhrase().printNoteInfo()
             self._phrases.append(Phrase())
     

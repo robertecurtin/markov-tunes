@@ -28,7 +28,7 @@ def IsNote(char):
     return char in 'abcdefgABCDEFGz'
     
 def IsChord(char):
-    return char in '"!'    
+    return char in '"![]'    
 
 def ContainsNote(string):
     for char in string:
@@ -47,7 +47,7 @@ def IsIgnored(char):
     # J should not be used, this may have some other meaning
     # \ denotes a continuations, which is not relevant as we remove bars
     # + was used in previous abc standards, but is outdated
-    return char.strip() in ': #*;?@[]m-J\\+'
+    return char.strip() in ': #*;?@m-J\\+'
 
 class Tune:
     def __init__(self):
@@ -57,17 +57,22 @@ class Tune:
         self.noteLength = 1.0/8.0
         self.key = ''
         self.origin = ''
-        self.phrases = {}
-        self.startPhrase = Phrase()
-        self.currentPhrase = self.startPhrase
+        self.currentNote = Note(self.noteLength)
+        self.phraseChain = PhraseChain(self.meter, self.noteLength)
+        
+    def setMeter(self, meter):
+        self.meter = meter
+        self.self.phraseChain.meter = meter
+        
+    def setNoteLength(self, noteLength):
+        self.noteLength = noteLength
+        self.self.phraseChain.noteLength = noteLength
     
     def GetLengthModifier(self, note):
         return self.noteLength
         
     def extractPhrasesFromLine(self, line):
         # Detect notes
-        currentNote = Note(self.noteLength)
-        phraseChain = PhraseChain(self.meter, self.noteLength)
         inChord = False
         for char in line.strip():
             # Record everything between " as a single note, as it is a chord
@@ -78,34 +83,34 @@ class Tune:
                 else:
                     # Begin a new chord
                     inChord = True
-                    phraseChain.addNote(currentNote)
-                    currentNote = Note(self.noteLength)
-                currentNote.addChar(char)
+                    self.phraseChain.addNote(self.currentNote)
+                    self.currentNote = Note(self.noteLength)
+                self.currentNote.addChar(char)
                 
             # If a chord is in progress, continue recording that chord until
             # the chord is closed
             elif inChord:
-                currentNote.addChar(char)
+                self.currentNote.addChar(char)
                 
             # If the character comes before a note and a note has been
             # recorded in the previous sequence, begin a new note
             # Otherwise, just add the character
             elif IsPreNote(char):
-                if currentNote.containsNote():
-                    phraseChain.addNote(currentNote)
-                    currentNote = Note(self.noteLength)
-                currentNote.addChar(char)
+                if self.currentNote.containsNote():
+                    self.phraseChain.addNote(self.currentNote)
+                    self.currentNote = Note(self.noteLength)
+                self.currentNote.addChar(char)
                 
             # If the character is a note, do the same as PreNote above
             elif IsNote(char):
-                if currentNote.containsNote():
-                    phraseChain.addNote(currentNote)
-                    currentNote = Note(self.noteLength)
-                currentNote.addChar(char)
+                if self.currentNote.containsNote():
+                    self.phraseChain.addNote(self.currentNote)
+                    self.currentNote = Note(self.noteLength)
+                self.currentNote.addChar(char)
                 
             # If the character comes after a note, it will always be added
             elif IsPostNote(char):
-                currentNote.addChar(char)
+                self.currentNote.addChar(char)
                 
             elif char == '%':
                 # Rest of the line is commented out

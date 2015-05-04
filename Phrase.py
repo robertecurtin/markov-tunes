@@ -66,3 +66,7 @@ class Phrase:
             if currentPhraseWeight > selectedPhrase:
                 print("Selected: {}".format(phrase.notes))
                 return phrase
+                
+    def printNoteInfo(self):
+        for note in self.notes:
+            print(note)
