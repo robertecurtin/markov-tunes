@@ -10,6 +10,11 @@ from fractions import Fraction
 def ParseAbcInfo(line):
     return line.split(':')[1].strip()
         
+def ParseAbcFraction(line):
+    info = ParseAbcInfo(line)
+    fraction = Fraction(info.strip())
+    return float(fraction)
+    
 def IsPreNote(char):
     # ^ _ and = change a note to sharp, flat, or natural respectively
     # ( begins a slur, { begins a grace note
@@ -28,7 +33,7 @@ def IsNote(char):
     return char in 'abcdefgABCDEFGz'
     
 def IsChord(char):
-    return char in '"![]'    
+    return char in '"!'    
 
 def ContainsNote(string):
     for char in string:
@@ -47,7 +52,7 @@ def IsIgnored(char):
     # J should not be used, this may have some other meaning
     # \ denotes a continuations, which is not relevant as we remove bars
     # + was used in previous abc standards, but is outdated
-    return char.strip() in ': #*;?@m-J\\+'
+    return char.strip() in ': #*;?@m-J\\+[]'
 
 class Tune:
     def __init__(self):
@@ -62,11 +67,11 @@ class Tune:
         
     def setMeter(self, meter):
         self.meter = meter
-        self.self.phraseChain.meter = meter
+        self.phraseChain.meter = meter
         
     def setNoteLength(self, noteLength):
         self.noteLength = noteLength
-        self.self.phraseChain.noteLength = noteLength
+        self.phraseChain.noteLength = noteLength
     
     def GetLengthModifier(self, note):
         return self.noteLength
@@ -108,9 +113,11 @@ class Tune:
                     self.currentNote = Note(self.noteLength)
                 self.currentNote.addChar(char)
                 
-            # If the character comes after a note, it will always be added
+            # If the character comes after a note, it will only be added
+            # if a note has been recorded. This may lose some information.
             elif IsPostNote(char):
-                self.currentNote.addChar(char)
+                if self.currentNote.containsNote():
+                    self.currentNote.addChar(char)
                 
             elif char == '%':
                 # Rest of the line is commented out
@@ -122,10 +129,7 @@ class Tune:
                 print(ord(char))
                 print("Warning: Unrecognized char [{}] from line [{}]"
                 .format(char, line))
-            
-       
 
-        
     def parseFile(self, fileName):
         if '.abc' not in fileName:
             print("Warning: The selected file is not a .abc file.")
@@ -149,9 +153,9 @@ class Tune:
             elif 'K:' in line:
                 self.key = ParseAbcInfo(line)
             elif 'M:' in line:
-                self.meter = Fraction(ParseAbcInfo(line).strip())
+                self.setMeter(ParseAbcFraction(line))
             elif 'L' in line:
-                self.noteLength = Fraction(ParseAbcInfo(line).strip())
+                self.setNoteLength(ParseAbcFraction(line))
             elif line.strip() == '':
                 continue
             else:
