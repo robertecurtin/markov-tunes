@@ -1,12 +1,12 @@
 #!/usr/bin/env python
-
 # Written by Robert Curtin
+# This class represents a single note in ABC
 
 import string
 
 def extractDigits(inputString):
     return ''.join([c for c in inputString.strip() if c in string.digits])
-# This class represents a single note in ABC
+
 class Note:
     def __init__(self, baseLength):
         self.text = ''

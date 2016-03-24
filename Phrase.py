@@ -1,12 +1,10 @@
 #!/usr/bin/env python
-
 # Written by Robert Curtin
-
+# This class represents a single musical phrase
+# It also tracks which other phrases it relates to.
 from random import randint
 from Note import Note
 
-# This class represents a single musical phrase
-# It also tracks which other phrases it relates to.
 class Phrase:
     def __init__(self):
         self.notes = []

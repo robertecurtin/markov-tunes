@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 # Written by Robert Curtin
+# This class encapsulates information about a single tune.
 import os # Temporary for testing
 from Phrase import Phrase
 from PhraseChain import PhraseChain

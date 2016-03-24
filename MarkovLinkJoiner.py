@@ -45,7 +45,7 @@ def CreateMarkovTune(markovLinksFileName):
     newTune = ''
     currentPhrase = 'start'
     outputFileName = 'Markovoutput.abc'
-    PrepAbcFile(outputFileName, "reel", "Amaj")
+    PrepAbcFile(outputFileName, "jig", "Amaj")
     outputFile = open(outputFileName, 'a')
     while 'end' not in currentPhrase:
         random = uniform(0.0, 100.0)

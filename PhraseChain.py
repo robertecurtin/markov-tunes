@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-
 # Written by Robert Curtin
-from Phrase import Phrase
-                
 # This class represents a chain of phrases, constructed by adding one note
 # at a time.
 # Be sure to set the phrase length before adding notes to properly group
 # phrases.
+from Phrase import Phrase
+                
 class PhraseChain:
     def __init__(self, meter, noteLength):
         firstPhrase = Phrase()
